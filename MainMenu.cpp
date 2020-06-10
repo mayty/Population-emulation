@@ -23,13 +23,13 @@ int MainMenu::Run(Window& window, StartData& data)
 		if (window.GetInput(x, y, pressed))
 		{
 			DeInit();
-			return -1;
+			return EN_EXIT;
 		}
 		for (unsigned int i = 0; i < buttons.size(); i++)
 		{
 			buf = buttons[i]->CheckCollision(x, y, pressed);
 			window.Draw(*buttons[i]);
-			if (buf)
+			if (buf != EN_NONE)
 			{
 				DeInit();
 				return buf;

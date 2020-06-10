@@ -3,7 +3,6 @@
 #include <SDL_ttf.h>
 #include <string>
 #include "Drawable.h"
-#include <Windows.h>
 
 class Window
 {
@@ -12,13 +11,15 @@ private:
 	SDL_Renderer* renderer;
 	TTF_Font* font;
 	std::string title;
+	static std::string error;
 	int width;
 	int height;
 public:
 	Window();
 	Window(int width, int height, std::string title);
 
-	bool Check();
+	bool fine();
+	static std::string get_last_error();
 	void Draw(Drawable& obj);
 	void Update();
 	void Clear(int r = 0, int g = 0, int b = 0);

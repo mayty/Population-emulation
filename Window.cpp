@@ -1,5 +1,9 @@
 #include "Window.h"
+#include "ReturnValues.h"
 #include <iostream>
+#include <Windows.h>
+
+std::string Window::error;
 
 Window::Window()
 {
@@ -22,46 +26,57 @@ Window::Window(int width, int height, std::string title)
 	SetConsoleOutputCP(1251);
 	if (SDL_Init(SDL_INIT_EVERYTHING))
 	{
-		std::cout << SDL_GetError() << std::endl;
-		return;
+		error = SDL_GetError();
+		throw std::exception{};
 	}
 	if (TTF_Init())
 	{
-		std::cout << TTF_GetError() << std::endl;
-		return;
+		error = TTF_GetError();
+		SDL_Quit();
+		throw std::exception{};
 	}	
 	window = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, NULL);
 	if (!window)
 	{
-		std::cout << SDL_GetError() << std::endl;
-		return;
+		error = SDL_GetError();
+		SDL_Quit();
+		TTF_Quit();
+		throw std::exception{};
 	}
 	renderer = SDL_CreateRenderer(window, -1, NULL);
 	if (!renderer)
 	{
 		SDL_DestroyWindow(window);
 		window = nullptr;
-		std::cout << SDL_GetError() << std::endl;
-		return;
+		SDL_Quit();
+		TTF_Quit();
+		throw std::exception{};
 	}
 	if (!(font = TTF_OpenFont(font_name, 85)))
 	{
-		std::cout << "Font load error" << std::endl;
 		SDL_DestroyRenderer(renderer);
 		renderer = nullptr;
 		SDL_DestroyWindow(window);
 		window = nullptr;
-		return;
+		SDL_Quit();
+		TTF_Quit();
+		throw std::exception{};
 	}
 	this->width = width;
 	this->height = height;
 	this->title = title;
 }
 
-bool Window::Check()
+bool Window::fine()
 {
 	return window && renderer && font;
 }
+
+std::string Window::get_last_error()
+{
+	return error;
+}
+
 
 void Window::Draw(Drawable& obj)
 {
@@ -87,7 +102,7 @@ int Window::GetInput(int& x0, int& y0, bool& pressed)
 	{
 		if (event.type == SDL_QUIT)
 		{
-			return -1;
+			return (int)return_values::EXIT;
 		}
 		int retVal = SDL_GetMouseState(&x0, &y0);
 		if (event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP)
@@ -131,6 +146,7 @@ Window::~Window()
 		TTF_CloseFont(font);
 		font = nullptr;
 	}
+	
 	SDL_Quit();
 	TTF_Quit();
 }
